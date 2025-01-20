@@ -1,7 +1,7 @@
 return {
   "ibhagwan/fzf-lua",
   opts = {
-    "skim",
+    "max-perf",
     keymap = {
       builtin = {
         true,

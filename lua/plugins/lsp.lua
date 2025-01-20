@@ -9,6 +9,12 @@ return {
       version = 'v0.*',
       opts = { appearance = { nerd_font_variant = 'normal' } },
     },
+    {
+      'mrcjkb/rustaceanvim',
+      version = '^5',
+      lazy = false,
+      ft = 'rs'
+    },
   },
   opts = {
     servers = {

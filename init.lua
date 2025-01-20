@@ -4,7 +4,6 @@ vim.g.loaded_netrwPlugin = 1
 vim.opt.splitbelow = true
 vim.opt.splitright = true
 vim.opt.title = true
-vim.opt.cmdheight = 0
 vim.opt.cursorline = true
 vim.opt.path:append { '**' }
 vim.opt.syntax = 'ON'
@@ -62,6 +61,10 @@ vim.filetype.add({
     razor = "html",
   },
 })
+
+vim.opt.cmdheight = 0
+vim.cmd [[ autocmd RecordingEnter * set cmdheight=1 ]]
+vim.cmd [[ autocmd RecordingLeave * set cmdheight=0 ]]
 
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
