@@ -51,7 +51,7 @@ return {
     })
 
     require'roslyn'.setup({
-      exe = "roslyn-language-server"
+      exe = "Microsoft.CodeAnalysis.LanguageServer"
     })
 
     vim.g.rustaceanvim = {
