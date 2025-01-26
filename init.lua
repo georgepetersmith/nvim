@@ -90,9 +90,9 @@ if vim.g.neovide then
   vim.o.guifont = "JetbrainsMono Nerd Font:h10" -- text below applies for VimScript
 end
 
-vim.o.background = 'dark'
+vim.o.background = 'light'
 local status_ok, err = pcall(function()
-    vim.cmd.colorscheme("catppuccin-mocha")
+    vim.cmd.colorscheme("catppuccin-latte")
 end)
 if not status_ok then
     vim.cmd.colorscheme("default")
