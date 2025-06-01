@@ -1,7 +1,6 @@
 return {
   "ibhagwan/fzf-lua",
   opts = {
-    "max-perf",
     keymap = {
       builtin = {
         true,
@@ -27,5 +26,6 @@ return {
     { 'gr', '<cmd>FzfLua lsp_references<cr>' },
     { 'gi', '<cmd>FzfLua lsp_implementations<cr>' },
     { 'gD', '<cmd>FzfLua lsp_declarations<cr>' },
-  },
+    { 'gd', '<cmd>FzfLua lsp_definitions<cr>' },
+  }
 }
