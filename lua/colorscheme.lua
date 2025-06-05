@@ -2,9 +2,9 @@ vim.o.background = 'dark'
 
 local status_ok, err = pcall(
   function()
-    vim.cmd.colorscheme("solarized-osaka")
+    vim.cmd.colorscheme("darcubox")
   end
 )
 if not status_ok then
-  vim.cmd.colorscheme("default")
+  vim.cmd.colorscheme("retrobox")
 end

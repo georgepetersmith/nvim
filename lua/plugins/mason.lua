@@ -17,7 +17,7 @@ return {
   },
   opts = {
     ensure_installed = {
-      "angularls",
+      "angularls@15.2.1",
       "html",
       "cssls",
       "tailwindcss",

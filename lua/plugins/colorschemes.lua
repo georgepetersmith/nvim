@@ -11,4 +11,7 @@ return {
       transparent = false,
     },
   },
+  {
+    "Koalhack/darcubox-nvim",
+  },
 }
