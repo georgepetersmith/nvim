@@ -32,5 +32,5 @@ vim.opt.spell = false
 vim.opt.signcolumn = 'yes'
 vim.opt.showmode = false
 vim.opt.belloff = 'all'
-vim.g.editorconfig = true
+vim.g.editorconfig = false
 vim.cmd('filetype plugin on')
