@@ -1,30 +1,18 @@
 return {
-  'stevearc/oil.nvim',
-  lazy = false,
-  ---@module 'oil'
-  ---@type oil.SetupOpts
-  dependencies = {
-    {
-      "echasnovski/mini.icons",
-      opts = {},
+  "stevearc/oil.nvim",
+  opts = {
+    default_file_explorer = true,
+    delete_to_trash = true,
+    skip_confirm_for_simple_edits = true,
+    view_options = {
+      show_hidden = true,
+      natural_order = true,
+      is_always_hidden = function(name, _)
+        return name == ".." or name == ".git"
+      end,
+      win_options = {
+        wrap = true,
+      },
     },
   },
-  config = function ()
-    require('oil').setup({
-      skip_confirm_for_simple_edits = true,
-    })
-
-    -- opens parent dir over current active window
-    vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
-    -- open parent dir in float window
-    vim.keymap.set("n", "<leader>-", require("oil").toggle_float)
-
-    vim.api.nvim_create_autocmd('FileType', {
-      pattern = 'oil',
-      callback = function ()
-        vim.opt_local.number = false
-        vim.opt_local.relativenumber = false
-      end
-    })
-  end
 }

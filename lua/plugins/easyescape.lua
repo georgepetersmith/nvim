@@ -1,4 +1,4 @@
 return {
-  'zhou13/vim-easyescape',
-  event = 'InsertEnter'
+  "zhou13/vim-easyescape",
+  event = "InsertEnter",
 }

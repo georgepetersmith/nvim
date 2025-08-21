@@ -1,0 +1,12 @@
+# Top-level EditorConfig for your Neovim configuration
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Default indentation: 2 spaces
+indent_style = space
+indent_size = 2
