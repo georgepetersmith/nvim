@@ -1,10 +1,10 @@
 return {
   {
-    'nvim-treesitter/nvim-treesitter',
-    build = ':TSUpdate',
-    event = { 'BufReadPre', 'BufNewFile' },
+    "nvim-treesitter/nvim-treesitter",
+    build = ":TSUpdate",
+    event = { "BufReadPre", "BufNewFile" },
     config = function()
-      require'nvim-treesitter.configs'.setup {
+      require("nvim-treesitter.configs").setup({
         ensure_installed = {
           "lua",
           "markdown",
@@ -12,34 +12,34 @@ return {
           "dockerfile",
           "sql",
           "json",
-          "typescript"
+          "typescript",
         },
         indent = { enable = true },
         highlight = { enable = true },
         additional_vim_regex_highlighting = false,
-      }
+      })
     end,
     dependencies = {
       {
-        'nvim-treesitter/nvim-treesitter-textobjects',
+        "nvim-treesitter/nvim-treesitter-textobjects",
         config = function()
-          require'nvim-treesitter.configs'.setup {
+          require("nvim-treesitter.configs").setup({
             textobjects = {
               select = {
                 enable = true,
                 lookahead = true,
                 keymaps = {
-                  ['ac'] = '@class.outer',
-                  ['ic'] = '@class.inner',
-                  ['af'] = '@function.outer',
-                  ['if'] = '@function.inner',
-                }
-              }
-            }
-          }
-        end
-      }
-    }
+                  ["ac"] = "@class.outer",
+                  ["ic"] = "@class.inner",
+                  ["af"] = "@function.outer",
+                  ["if"] = "@function.inner",
+                },
+              },
+            },
+          })
+        end,
+      },
+    },
   },
   {
     "windwp/nvim-ts-autotag",
@@ -48,8 +48,8 @@ return {
       -- Independent nvim-ts-autotag setup
       require("nvim-ts-autotag").setup({
         opts = {
-          enable_close = true,           -- Auto-close tags
-          enable_rename = true,          -- Auto-rename pairs
+          enable_close = true, -- Auto-close tags
+          enable_rename = true, -- Auto-rename pairs
           enable_close_on_slash = false, -- Disable auto-close on trailing `</`
         },
         per_filetype = {

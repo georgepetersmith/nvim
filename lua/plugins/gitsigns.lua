@@ -1,6 +1,6 @@
 return {
   "lewis6991/gitsigns.nvim",
-  event = { 'BufReadPre', 'BufNewFile' },
+  event = { "BufReadPre", "BufNewFile" },
   opts = {
     on_attach = function(bufnr)
       local gs = package.loaded.gitsigns
@@ -17,10 +17,14 @@ return {
       map("n", "<leader>gs", gs.stage_hunk, "Stage hunk")
       map("n", "<leader>gr", gs.reset_hunk, "Reset hunk")
 
-      map("n", "<leader>gbl", function() gs.blame_line({ full = true }) end, "Blame line")
+      map("n", "<leader>gbl", function()
+        gs.blame_line({ full = true })
+      end, "Blame line")
       map("n", "<leader>gB", gs.toggle_current_line_blame, "Toggle line blame")
       map("n", "<leader>gd", gs.diffthis, "Diff this")
-      map("n", "<leader>gD", function() gs.diffthis("~") end, "Diff this ~")
+      map("n", "<leader>gD", function()
+        gs.diffthis("~")
+      end, "Diff this ~")
 
       -- Text object
       map({ "o", "x" }, "ih", ":<C-U>Gitsigns select_hunk<CR>", "Gitsigns select hunk")

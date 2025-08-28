@@ -81,6 +81,10 @@ require("lazy").setup({
     import = "plugins",
   },
   checker = { enabled = false },
+  change_detection = {
+    enabled = true,
+    notify = false,
+  },
 })
 
 if vim.g.neovide then
@@ -94,3 +98,5 @@ end)
 if not status_ok then
   vim.cmd.colorscheme("default")
 end
+
+require("neovide")
