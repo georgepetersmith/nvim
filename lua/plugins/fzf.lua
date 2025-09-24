@@ -2,6 +2,7 @@ return {
   "ibhagwan/fzf-lua",
   lazy = false,
   opts = {
+    fzf_colors = true,
     keymap = {
       builtin = {
         true,

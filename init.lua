@@ -88,7 +88,7 @@ require("lazy").setup({
 })
 
 if vim.g.neovide then
-  vim.o.guifont = "JetbrainsMono Nerd Font:h10"
+  require("neovide")
 end
 
 vim.o.background = "dark"
@@ -98,5 +98,3 @@ end)
 if not status_ok then
   vim.cmd.colorscheme("default")
 end
-
-require("neovide")

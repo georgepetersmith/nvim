@@ -1,7 +1,7 @@
-local fontsize = 16
+local fontsize = 10
 
 function setguifontsize(size)
-  vim.o.guifont = "JetbrainsMono Nerd Font:h" .. size
+  vim.o.guifont = "Monaspace Neon NF:h" .. size
 end
 
 function adjustguifontsize(adjustment)
