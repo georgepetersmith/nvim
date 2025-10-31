@@ -4,6 +4,7 @@ return {
   opts = {
     library = {
       { path = "${3rd}/plenary.nvim/lua", words = { "plenary" } },
+      "nvim-dap-ui",
     },
   },
 }
