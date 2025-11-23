@@ -1,5 +1,6 @@
 vim.g.mapleader = " "
 vim.opt.splitbelow = true
+vim.opt.winborder = "single"
 vim.opt.splitright = true
 vim.opt.title = true
 vim.opt.cursorline = true
