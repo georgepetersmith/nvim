@@ -1,8 +1,325 @@
-require("options")
-require("op-sys")
-require("keybinds")
-require("lazy-pm")
+---@diagnostic disable: missing-fields
+
+local enabled_lsps = {
+  "roslyn",
+  "rust_analyzer",
+  "lua_ls",
+}
+
+local treesitter_parsers = {
+  "bash",
+  "c",
+  "c_sharp",
+  "cpp",
+  "csv",
+  "lua",
+  "vim",
+  "vimdoc",
+  "query",
+  "markdown",
+  "markdown_inline",
+  "json",
+  "jsonc",
+  "toml",
+  "yaml",
+  "html",
+  "css",
+  "javascript",
+  "typescript",
+  "tsx",
+  "python",
+  "go",
+  "rust",
+  "sql",
+  "dockerfile",
+  "gitignore",
+}
+
+vim.g.mapleader = " "
+vim.opt.winborder = "single"
+vim.opt.splitbelow = true
+vim.opt.splitright = true
+vim.opt.title = true
+vim.opt.cursorline = true
+vim.opt.path:append({ "**" })
+vim.opt.syntax = "ON"
+vim.opt.backup = false
+vim.opt.swapfile = false
+vim.opt.compatible = false
+vim.opt.number = true
+vim.opt.relativenumber = true
+vim.opt.mouse = "a"
+vim.opt.ignorecase = true
+vim.opt.smartcase = true
+vim.opt.wrap = false
+vim.opt.fillchars = { eob = " " }
+vim.opt.tabstop = 4
+vim.opt.softtabstop = 2
+vim.opt.shiftwidth = 2
+vim.opt.fileencoding = "utf-8"
+vim.opt.encoding = "utf-8"
+vim.opt.pumheight = 10
+vim.opt.expandtab = true
+vim.opt.smartindent = true
+vim.opt.breakindent = true
+vim.opt.scrolloff = 8
+vim.opt.sidescrolloff = 10
+vim.opt.completeopt = { "menuone", "noselect" }
+vim.opt.termguicolors = true
+vim.opt.spell = false
+vim.opt.signcolumn = "yes"
+vim.opt.showmode = false
+vim.opt.belloff = "all"
+vim.g.editorconfig = true
+vim.cmd("filetype plugin on")
+
+local has = function(x)
+  return vim.fn.has(x) == 1
+end
+
+local is_mac = has("macunix")
+local is_windows = has("win32")
+
+if is_mac then
+  vim.opt.clipboard:apend({ "unnamedplus" })
+end
+if is_windows then
+  vim.opt.clipboard:prepend({ "unnamed", "unnamedplus" })
+
+  vim.o.shell = "pwsh"
+  vim.o.shellcmdflag =
+    "-NoLogo -ExecutionPolicy RemoteSigned -Command [Console]::InputEncoding=[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;"
+  vim.o.shellquote = ""
+  vim.o.shellxquote = ""
+  vim.o.shellpipe = "2>&1 | Out-File -Encoding UTF8 %s; exit $LastExitCode"
+  vim.o.shellredir = "2>&1 | Out-File -Encoding UTF8 %s; exit $LastExitCode"
+end
+
+vim.keymap.set("n", "<leader>w", "<C-w>", { desc = "Allow leader w to prefix window commands" })
+vim.keymap.set("t", "<Esc>", "<C-\\><C-n>", { desc = "Esc enters normal mode in the terminal" })
+vim.keymap.set("n", "<C-w>q", "<cmd>%bd<cr>", { desc = "Delete the current buffer" })
+
+vim.pack.add({ "https://github.com/ibhagwan/fzf-lua" })
+require("fzf-lua").setup({
+  fzf_colors = true,
+  keymap = {
+    builtin = {
+      true,
+      ["<Esc>"] = "hide",
+    },
+  },
+  winopts = {
+    preview = {
+      hidden = "hidden",
+    },
+  },
+})
+vim.keymap.set("n", "<leader>f", "<cmd>FzfLua files<cr>")
+vim.keymap.set("n", "<leader>/", "<cmd>FzfLua live_grep<cr>")
+vim.keymap.set("n", "<leader>b", "<cmd>FzfLua buffers<cr>")
+vim.keymap.set("n", "<leader>h", "<cmd>FzfLua help_tags<cr>")
+vim.keymap.set("n", "<leader>;", "<cmd>FzfLua resume<cr>")
+
+vim.api.nvim_create_autocmd("PackChanged", {
+  pattern = "blink.cmp",
+  group = vim.api.nvim_create_augroup("blink_update", { clear = true }),
+  callback = function(e)
+    if e.data.kind == "update" then
+      vim.cmd.packadd({ args = { e.data.spec.name }, bang = false })
+      require("blink.cmp.fuzzy.build").build()
+    end
+  end,
+})
+vim.pack.add({ "https://github.com/saghen/blink.cmp" })
+require("blink.cmp").setup({})
+
+vim.pack.add({ "https://github.com/stevearc/conform.nvim" })
+vim.o.formatexpr = "v:lua.require'conform'.formatexpr()"
+require("conform").setup({
+  format_on_save = {
+    timeout_ms = 500,
+    lsp_format = "fallback",
+  },
+  default_format_opts = {
+    lsp_format = "fallback",
+  },
+  formatters_by_ft = {
+    lua = { "stylua" },
+    rust = { "leptosfmt", "rustfmt", lsp_format = "fallback" },
+    javascript = { "prettier", stop_after_first = true },
+  },
+})
+
+vim.pack.add({ "https://github.com/lewis6991/gitsigns.nvim" })
+require("gitsigns").setup({})
+vim.keymap.set("n", "]c", "Gitsigns next_hunk", { desc = "Next Hunk" })
+vim.keymap.set("n", "[c", "Gitsigns prev_hunk", { desc = "Prev Hunk" })
+
+vim.pack.add({ "https://github.com/stevearc/oil.nvim" })
+require("oil").setup({
+  default_file_explorer = true,
+  delete_to_trash = true,
+  skip_confirm_for_simple_edits = true,
+  view_options = {
+    show_hidden = true,
+    natural_order = true,
+    is_always_hidden = function(name, _)
+      return name == ".." or name == ".git"
+    end,
+    win_options = {
+      wrap = true,
+    },
+  },
+})
+vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
+
+vim.pack.add({
+  { src = "https://github.com/nvim-treesitter/nvim-treesitter", version = "master" },
+  { src = "https://github.com/nvim-treesitter/nvim-treesitter-textobjects", version = "master" },
+  { src = "https://github.com/nvim-treesitter/nvim-treesitter-context" },
+  { src = "https://github.com/windwp/nvim-ts-autotag" },
+})
+vim.api.nvim_create_autocmd("PackChanged", {
+  callback = function()
+    require("nvim-treesitter").update()
+  end,
+})
+require("nvim-treesitter.configs").setup({
+  ensure_installed = treesitter_parsers,
+  auto_install = true,
+  highlight = {
+    enable = true,
+    additional_vim_regex_highlighting = false,
+  },
+  indent = {
+    enable = true,
+  },
+  incremental_selection = {
+    enable = true,
+    keymaps = {
+      init_selection = "gnn",
+      node_incremental = "grn",
+      scope_incremental = "grc",
+      node_decremental = "grm",
+    },
+  },
+  textobjects = {
+    select = {
+      enable = true,
+      lookahead = true,
+      keymaps = {
+        ["af"] = "@function.outer",
+        ["if"] = "@function.inner",
+        ["ac"] = "@class.outer",
+        ["ic"] = "@class.inner",
+        ["al"] = "@loop.outer",
+        ["il"] = "@loop.inner",
+      },
+    },
+    move = {
+      enable = true,
+      set_jumps = true,
+      goto_next_start = {
+        ["]f"] = "@function.outer",
+        ["]s"] = "@class.outer",
+      },
+      goto_previous_start = {
+        ["[f"] = "@function.outer",
+        ["[s"] = "@class.outer",
+      },
+    },
+    swap = {
+      enable = true,
+      swap_next = {
+        ["<leader>a"] = "@parameter.inner",
+      },
+      swap_previous = {
+        ["<leader>A"] = "@parameter.inner",
+      },
+    },
+  },
+  autotag = {
+    enable = true,
+  },
+})
+require("treesitter-context").setup({
+  max_lines = 3,
+  trim_scope = "outer",
+  mode = "cursor",
+})
+
+local aug = vim.api.nvim_create_augroup("my_lsp", {})
+vim.api.nvim_create_autocmd("LspAttach", {
+  group = aug,
+  callback = function(args)
+    local bufnr = args.buf
+    local function map(mode, lhs, rhs, desc)
+      vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, desc = desc })
+    end
+
+    map("n", "gd", vim.lsp.buf.definition, "Goto Definition")
+    map("n", "gD", vim.lsp.buf.declaration, "Goto Declaration")
+    map("n", "gi", vim.lsp.buf.implementation, "Goto Implementation")
+    map("n", "gr", vim.lsp.buf.references, "Goto References")
+    map("n", "K", vim.lsp.buf.hover, "Hover")
+    map("n", "<F2>", vim.lsp.buf.rename, "Rename Symbol")
+    map({ "n", "v" }, "<leader>.", vim.lsp.buf.code_action, "Code Action")
+    map("n", "[d", function()
+      vim.diagnostic.jump({ count = -1 })
+    end, "Prev Diagnostic")
+    map("n", "]d", function()
+      vim.diagnostic.jump({ count = 1 })
+    end, "Next Diagnostic")
+    map("n", "gh", vim.diagnostic.open_float, "Line Diagnostics")
+  end,
+})
+vim.pack.add({ "https://github.com/neovim/nvim-lspconfig" })
+vim.pack.add({ "https://github.com/seblyng/roslyn.nvim" })
+vim.lsp.enable(enabled_lsps)
+vim.lsp.config("lua_ls", {
+  settings = {
+    Lua = {
+      workspace = {
+        library = vim.api.nvim_get_runtime_file("", true),
+      },
+    },
+  },
+})
+
+vim.pack.add({ "https://github.com/vague-theme/vague.nvim" })
+require("vague").setup({})
+
+vim.pack.add({ "https://github.com/f-person/auto-dark-mode.nvim" })
+require("auto-dark-mode").setup({
+  set_dark_mode = function()
+    vim.api.nvim_set_option_value("background", "dark", {})
+    vim.cmd.colorscheme("vague")
+  end,
+  set_light_mode = function()
+    vim.api.nvim_set_option_value("background", "light", {})
+    vim.cmd.colorscheme("default")
+  end,
+})
 
 if vim.g.neovide then
-  require("neovide")
+  local font_size = 10
+
+  local function set_gui_font_size(value)
+    vim.o.guifont = "Monaspace Neon NF:h" .. value
+  end
+
+  local function adjust_gui_font_size(delta)
+    font_size = font_size + delta
+    set_gui_font_size(font_size)
+  end
+
+  vim.keymap.set("n", "<c-->", function()
+    adjust_gui_font_size(-1)
+  end)
+  vim.keymap.set("n", "<c-+>", function()
+    adjust_gui_font_size(1)
+  end)
+  vim.keymap.set("n", "<F11>", "<cmd>let g:neovide_fullscreen = !g:neovide_fullscreen<cr>")
+
+  set_gui_font_size(font_size)
 end
