@@ -366,14 +366,40 @@ dap.configurations.cs = {
       local fzf = require("fzf-lua")
       local co = coroutine.running()
 
+      -- Find all csproj files and extract project names
+      local csproj_handle = io.popen("fd --type f --extension csproj")
+      local project_names = {}
+      if csproj_handle then
+        for line in csproj_handle:lines() do
+          local name = line:match("([^/\\]+)%.csproj$")
+          if name then
+            project_names[name] = true
+          end
+        end
+        csproj_handle:close()
+      end
+
+      -- Build pattern for fd to match only project DLLs
+      local patterns = {}
+      for name in pairs(project_names) do
+        table.insert(patterns, string.format("%s", name))
+      end
+
+      if #patterns == 0 then
+        vim.notify("No .csproj files found", vim.log.levels.WARN)
+        return nil
+      end
+
+      local cmd = 'fd -I --type f -E obj -g "{' .. table.concat(patterns, ",") .. '}.dll" .'
+
+      print(cmd)
+
       fzf.files({
-        cmd = "fd -I --type f --extension dll .",
+        cmd = cmd,
         prompt = "Select DLL> ",
         actions = {
           ["default"] = function(selected)
-            local path = selected[1]
-            -- fzf-lua may include icons/prefixes, extract the path
-            path = fzf.path.entry_to_file(selected[1]).path
+            local path = fzf.path.entry_to_file(selected[1]).path
             coroutine.resume(co, path)
           end,
         },
