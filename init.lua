@@ -71,6 +71,10 @@ vim.opt.signcolumn = "yes"
 vim.opt.showmode = false
 vim.opt.belloff = "all"
 vim.g.editorconfig = true
+vim.diagnostic.config({
+  virtual_text = false,
+  virtual_lines = { current_line = true },
+})
 vim.cmd("filetype plugin on")
 
 local has = function(x)
@@ -300,6 +304,107 @@ require("auto-dark-mode").setup({
     vim.cmd.colorscheme("default")
   end,
 })
+
+-- DAP (Debug Adapter Protocol)
+vim.pack.add({
+  { src = "https://github.com/mfussenegger/nvim-dap" },
+  { src = "https://github.com/rcarriga/nvim-dap-ui" },
+  { src = "https://github.com/nvim-neotest/nvim-nio" },
+  { src = "https://github.com/theHamsta/nvim-dap-virtual-text" },
+})
+
+local dap = require("dap")
+local dapui = require("dapui")
+
+require("nvim-dap-virtual-text").setup({})
+dapui.setup({})
+
+-- Automatically open/close DAP UI
+dap.listeners.before.attach.dapui_config = function()
+  dapui.open()
+end
+dap.listeners.before.launch.dapui_config = function()
+  dapui.open()
+end
+dap.listeners.before.event_terminated.dapui_config = function()
+  dapui.close()
+end
+dap.listeners.before.event_exited.dapui_config = function()
+  dapui.close()
+end
+
+-- DAP Keymaps
+vim.keymap.set("n", "<F5>", dap.continue, { desc = "Debug: Start/Continue" })
+vim.keymap.set("n", "<F10>", dap.step_over, { desc = "Debug: Step Over" })
+vim.keymap.set("n", "<F11>", dap.step_into, { desc = "Debug: Step Into" })
+vim.keymap.set("n", "<F12>", dap.step_out, { desc = "Debug: Step Out" })
+vim.keymap.set("n", "<leader>db", dap.toggle_breakpoint, { desc = "Debug: Toggle Breakpoint" })
+vim.keymap.set("n", "<leader>dB", function()
+  dap.set_breakpoint(vim.fn.input("Breakpoint condition: "))
+end, { desc = "Debug: Set Conditional Breakpoint" })
+vim.keymap.set("n", "<leader>dl", function()
+  dap.set_breakpoint(nil, nil, vim.fn.input("Log point message: "))
+end, { desc = "Debug: Set Log Point" })
+vim.keymap.set("n", "<leader>dr", dap.repl.open, { desc = "Debug: Open REPL" })
+vim.keymap.set("n", "<leader>du", dapui.toggle, { desc = "Debug: Toggle UI" })
+vim.keymap.set({ "n", "v" }, "<leader>de", dapui.eval, { desc = "Debug: Evaluate Expression" })
+
+-- Debug adapter configurations
+-- C#/.NET (netcoredbg)
+dap.adapters.coreclr = {
+  type = "executable",
+  command = "netcoredbg",
+  args = { "--interpreter=vscode" },
+}
+
+dap.configurations.cs = {
+  {
+    type = "coreclr",
+    name = "Launch",
+    request = "launch",
+    program = function()
+      return vim.fn.input("Path to dll: ", vim.fn.getcwd() .. "/bin/Debug/", "file")
+    end,
+  },
+}
+
+-- Rust (codelldb)
+dap.adapters.codelldb = {
+  type = "server",
+  port = "${port}",
+  executable = {
+    command = "codelldb",
+    args = { "--port", "${port}" },
+  },
+}
+
+dap.configurations.rust = {
+  {
+    name = "Launch",
+    type = "codelldb",
+    request = "launch",
+    program = function()
+      return vim.fn.input("Path to executable: ", vim.fn.getcwd() .. "/target/debug/", "file")
+    end,
+    cwd = "${workspaceFolder}",
+    stopOnEntry = false,
+  },
+}
+
+-- Lua (local-lua-debugger-vscode)
+dap.adapters["local-lua"] = {
+  type = "executable",
+  command = "local-lua-dbg",
+  enrich_config = function(config, on_config)
+    if not config["extensionPath"] then
+      local c = vim.deepcopy(config)
+      c.extensionPath = vim.fn.exepath("local-lua-dbg"):match("(.*)[/\\]")
+      on_config(c)
+    else
+      on_config(config)
+    end
+  end,
+}
 
 if vim.g.neovide then
   local font_size = 10
