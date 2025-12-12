@@ -363,7 +363,23 @@ dap.configurations.cs = {
     name = "Launch",
     request = "launch",
     program = function()
-      return vim.fn.input("Path to dll: ", vim.fn.getcwd() .. "/bin/Debug/", "file")
+      local fzf = require("fzf-lua")
+      local co = coroutine.running()
+
+      fzf.files({
+        cmd = "fd -I --type f --extension dll .",
+        prompt = "Select DLL> ",
+        actions = {
+          ["default"] = function(selected)
+            local path = selected[1]
+            -- fzf-lua may include icons/prefixes, extract the path
+            path = fzf.path.entry_to_file(selected[1]).path
+            coroutine.resume(co, path)
+          end,
+        },
+      })
+
+      return coroutine.yield()
     end,
   },
 }
