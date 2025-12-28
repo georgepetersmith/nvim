@@ -156,8 +156,8 @@ require("conform").setup({
 
 vim.pack.add({ "https://github.com/lewis6991/gitsigns.nvim" })
 require("gitsigns").setup({})
-vim.keymap.set("n", "]c", "Gitsigns next_hunk", { desc = "Next Hunk" })
-vim.keymap.set("n", "[c", "Gitsigns prev_hunk", { desc = "Prev Hunk" })
+vim.keymap.set("n", "]c", "<cmd>Gitsigns next_hunk<cr>", { desc = "Next Hunk" })
+vim.keymap.set("n", "[c", "<cmd>Gitsigns prev_hunk<cr>", { desc = "Prev Hunk" })
 
 vim.pack.add({ "https://github.com/stevearc/oil.nvim" })
 require("oil").setup({
