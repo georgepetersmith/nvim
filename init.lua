@@ -4,6 +4,7 @@ local enabled_lsps = {
   "roslyn",
   "rust_analyzer",
   "lua_ls",
+  "ts_ls",
 }
 
 local treesitter_parsers = {
@@ -180,7 +181,6 @@ vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
 vim.pack.add({
   { src = "https://github.com/nvim-treesitter/nvim-treesitter", version = "master" },
   { src = "https://github.com/nvim-treesitter/nvim-treesitter-textobjects", version = "master" },
-  { src = "https://github.com/nvim-treesitter/nvim-treesitter-context" },
   { src = "https://github.com/windwp/nvim-ts-autotag" },
 })
 vim.api.nvim_create_autocmd("PackChanged", {
@@ -245,11 +245,6 @@ require("nvim-treesitter.configs").setup({
   autotag = {
     enable = true,
   },
-})
-require("treesitter-context").setup({
-  max_lines = 3,
-  trim_scope = "outer",
-  mode = "cursor",
 })
 
 local aug = vim.api.nvim_create_augroup("my_lsp", {})
