@@ -1,5 +1,9 @@
 {
   "plugins": {
+    "NeoSolarized.nvim": {
+      "rev": "3c55ad358c062aa4879950c4f83b4deeac6b72df",
+      "src": "https://github.com/Tsuzat/NeoSolarized.nvim"
+    },
     "auto-dark-mode.nvim": {
       "rev": "e300259ec777a40b4b9e3c8e6ade203e78d15881",
       "src": "https://github.com/f-person/auto-dark-mode.nvim"

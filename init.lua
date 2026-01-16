@@ -124,6 +124,12 @@ vim.keymap.set("n", "<leader>/", "<cmd>FzfLua live_grep<cr>")
 vim.keymap.set("n", "<leader>b", "<cmd>FzfLua buffers<cr>")
 vim.keymap.set("n", "<leader>h", "<cmd>FzfLua help_tags<cr>")
 vim.keymap.set("n", "<leader>;", "<cmd>FzfLua resume<cr>")
+vim.keymap.set("n", "<leader>s", "<cmd>FzfLua lsp_document_symbols<cr>")
+vim.keymap.set("n", "<leader>S", "<cmd>FzfLua lsp_live_workspace_symbols<cr>")
+vim.keymap.set("n", "<leader>d", "<cmd>FzfLua diagnostics_document<cr>")
+vim.keymap.set("n", "<leader>D", "<cmd>FzfLua diagnostics_workspace<cr>")
+vim.keymap.set("n", "<leader>@", "<cmd>FzfLua lsp_finder<cr>")
+vim.keymap.set("n", "<leader>a", "<cmd>FzfLua lsp_code_actions<cr>")
 
 vim.api.nvim_create_autocmd("PackChanged", {
   pattern = "blink.cmp",
@@ -287,12 +293,13 @@ vim.lsp.config("lua_ls", {
 
 vim.pack.add({ "https://github.com/vague-theme/vague.nvim" })
 require("vague").setup({})
+vim.pack.add({ "https://github.com/Tsuzat/NeoSolarized.nvim" })
 
 vim.pack.add({ "https://github.com/f-person/auto-dark-mode.nvim" })
 require("auto-dark-mode").setup({
   set_dark_mode = function()
     vim.api.nvim_set_option_value("background", "dark", {})
-    vim.cmd.colorscheme("vague")
+    vim.cmd.colorscheme("NeoSolarized")
   end,
   set_light_mode = function()
     vim.api.nvim_set_option_value("background", "light", {})
@@ -330,6 +337,7 @@ end
 
 -- DAP Keymaps
 vim.keymap.set("n", "<F5>", dap.continue, { desc = "Debug: Start/Continue" })
+vim.keymap.set("n", "<F9>", dap.toggle_breakpoint, { desc = "Debug: Toggle Breakpoint" })
 vim.keymap.set("n", "<F10>", dap.step_over, { desc = "Debug: Step Over" })
 vim.keymap.set("n", "<F11>", dap.step_into, { desc = "Debug: Step Into" })
 vim.keymap.set("n", "<F12>", dap.step_out, { desc = "Debug: Step Out" })
@@ -344,103 +352,10 @@ vim.keymap.set("n", "<leader>dr", dap.repl.open, { desc = "Debug: Open REPL" })
 vim.keymap.set("n", "<leader>du", dapui.toggle, { desc = "Debug: Toggle UI" })
 vim.keymap.set({ "n", "v" }, "<leader>de", dapui.eval, { desc = "Debug: Evaluate Expression" })
 
--- Debug adapter configurations
--- C#/.NET (netcoredbg)
-dap.adapters.coreclr = {
+dap.adapters.netcoredbg = {
   type = "executable",
   command = "netcoredbg",
   args = { "--interpreter=vscode" },
-}
-
-dap.configurations.cs = {
-  {
-    type = "coreclr",
-    name = "Launch",
-    request = "launch",
-    program = function()
-      local fzf = require("fzf-lua")
-      local co = coroutine.running()
-
-      -- Find all csproj files and extract project names
-      local csproj_handle = io.popen("fd --type f --extension csproj")
-      local project_names = {}
-      if csproj_handle then
-        for line in csproj_handle:lines() do
-          local name = line:match("([^/\\]+)%.csproj$")
-          if name then
-            project_names[name] = true
-          end
-        end
-        csproj_handle:close()
-      end
-
-      -- Build pattern for fd to match only project DLLs
-      local patterns = {}
-      for name in pairs(project_names) do
-        table.insert(patterns, string.format("%s", name))
-      end
-
-      if #patterns == 0 then
-        vim.notify("No .csproj files found", vim.log.levels.WARN)
-        return nil
-      end
-
-      local cmd = 'fd -I --type f -E obj -g "{' .. table.concat(patterns, ",") .. '}.dll" .'
-
-      print(cmd)
-
-      fzf.files({
-        cmd = cmd,
-        prompt = "Select DLL> ",
-        actions = {
-          ["default"] = function(selected)
-            local path = fzf.path.entry_to_file(selected[1]).path
-            coroutine.resume(co, path)
-          end,
-        },
-      })
-
-      return coroutine.yield()
-    end,
-  },
-}
-
--- Rust (codelldb)
-dap.adapters.codelldb = {
-  type = "server",
-  port = "${port}",
-  executable = {
-    command = "codelldb",
-    args = { "--port", "${port}" },
-  },
-}
-
-dap.configurations.rust = {
-  {
-    name = "Launch",
-    type = "codelldb",
-    request = "launch",
-    program = function()
-      return vim.fn.input("Path to executable: ", vim.fn.getcwd() .. "/target/debug/", "file")
-    end,
-    cwd = "${workspaceFolder}",
-    stopOnEntry = false,
-  },
-}
-
--- Lua (local-lua-debugger-vscode)
-dap.adapters["local-lua"] = {
-  type = "executable",
-  command = "local-lua-dbg",
-  enrich_config = function(config, on_config)
-    if not config["extensionPath"] then
-      local c = vim.deepcopy(config)
-      c.extensionPath = vim.fn.exepath("local-lua-dbg"):match("(.*)[/\\]")
-      on_config(c)
-    else
-      on_config(config)
-    end
-  end,
 }
 
 if vim.g.neovide then
