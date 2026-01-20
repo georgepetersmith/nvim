@@ -86,7 +86,7 @@ local is_mac = has("macunix")
 local is_windows = has("win32")
 
 if is_mac then
-  vim.opt.clipboard:apend({ "unnamedplus" })
+  vim.opt.clipboard:append({ "unnamedplus" })
 end
 if is_windows then
   vim.opt.clipboard:prepend({ "unnamed", "unnamedplus" })
@@ -291,21 +291,12 @@ vim.lsp.config("lua_ls", {
   },
 })
 
-vim.pack.add({ "https://github.com/vague-theme/vague.nvim" })
-require("vague").setup({})
+-- vim.pack.add({ "https://github.com/vague-theme/vague.nvim" })
+-- require("vague").setup({})
 vim.pack.add({ "https://github.com/Tsuzat/NeoSolarized.nvim" })
-
-vim.pack.add({ "https://github.com/f-person/auto-dark-mode.nvim" })
-require("auto-dark-mode").setup({
-  set_dark_mode = function()
-    vim.api.nvim_set_option_value("background", "dark", {})
-    vim.cmd.colorscheme("NeoSolarized")
-  end,
-  set_light_mode = function()
-    vim.api.nvim_set_option_value("background", "light", {})
-    vim.cmd.colorscheme("default")
-  end,
-})
+require("NeoSolarized").setup({ transparent = false })
+vim.api.nvim_set_option_value("background", "dark", {})
+vim.cmd.colorscheme("NeoSolarized")
 
 -- DAP (Debug Adapter Protocol)
 vim.pack.add({
@@ -352,14 +343,16 @@ vim.keymap.set("n", "<leader>dr", dap.repl.open, { desc = "Debug: Open REPL" })
 vim.keymap.set("n", "<leader>du", dapui.toggle, { desc = "Debug: Toggle UI" })
 vim.keymap.set({ "n", "v" }, "<leader>de", dapui.eval, { desc = "Debug: Evaluate Expression" })
 
-dap.adapters.netcoredbg = {
+dap.adapters.coreclr = {
   type = "executable",
   command = "netcoredbg",
   args = { "--interpreter=vscode" },
 }
 
 if vim.g.neovide then
-  local font_size = 10
+  vim.api.nvim_set_current_dir(vim.env.PWD)
+
+  local font_size = 13
 
   local function set_gui_font_size(value)
     vim.o.guifont = "Monaspace Neon NF:h" .. value
@@ -370,7 +363,7 @@ if vim.g.neovide then
     set_gui_font_size(font_size)
   end
 
-  vim.keymap.set("n", "<c-->", function()
+  vim.keymap.set("n", "<c-_>", function()
     adjust_gui_font_size(-1)
   end)
   vim.keymap.set("n", "<c-+>", function()
