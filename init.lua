@@ -104,6 +104,11 @@ vim.keymap.set("n", "<leader>w", "<C-w>", { desc = "Allow leader w to prefix win
 vim.keymap.set("t", "<Esc>", "<C-\\><C-n>", { desc = "Esc enters normal mode in the terminal" })
 vim.keymap.set("n", "<C-w>q", "<cmd>%bd<cr>", { desc = "Delete the current buffer" })
 
+vim.pack.add({ "https://github.com/Tsuzat/NeoSolarized.nvim" })
+require("NeoSolarized").setup({ transparent = false })
+vim.api.nvim_set_option_value("background", "dark", {})
+vim.cmd.colorscheme("NeoSolarized")
+
 vim.pack.add({ "https://github.com/ibhagwan/fzf-lua" })
 require("fzf-lua").setup({
   fzf_colors = true,
@@ -158,6 +163,19 @@ require("conform").setup({
     lua = { "stylua" },
     rust = { "leptosfmt", "rustfmt", lsp_format = "fallback" },
     javascript = { "prettier", stop_after_first = true },
+    html = { "prettier", stop_after_first = true },
+    css = { "prettier", stop_after_first = true },
+    sql = { "sqlfluff", stop_after_first = true },
+  },
+  formatters = {
+    sqlfluff = {
+      command = "sqlfluff",
+      args = { "format", "-" },
+      stdin = true,
+      cwd = function()
+        return vim.fn.getcwd()
+      end,
+    },
   },
 })
 
@@ -204,15 +222,6 @@ require("nvim-treesitter.configs").setup({
   indent = {
     enable = true,
   },
-  incremental_selection = {
-    enable = true,
-    keymaps = {
-      init_selection = "gnn",
-      node_incremental = "grn",
-      scope_incremental = "grc",
-      node_decremental = "grm",
-    },
-  },
   textobjects = {
     select = {
       enable = true,
@@ -220,8 +229,8 @@ require("nvim-treesitter.configs").setup({
       keymaps = {
         ["af"] = "@function.outer",
         ["if"] = "@function.inner",
-        ["ac"] = "@class.outer",
-        ["ic"] = "@class.inner",
+        ["as"] = "@class.outer",
+        ["is"] = "@class.inner",
         ["al"] = "@loop.outer",
         ["il"] = "@loop.inner",
       },
@@ -290,64 +299,6 @@ vim.lsp.config("lua_ls", {
     },
   },
 })
-
--- vim.pack.add({ "https://github.com/vague-theme/vague.nvim" })
--- require("vague").setup({})
-vim.pack.add({ "https://github.com/Tsuzat/NeoSolarized.nvim" })
-require("NeoSolarized").setup({ transparent = false })
-vim.api.nvim_set_option_value("background", "dark", {})
-vim.cmd.colorscheme("NeoSolarized")
-
--- DAP (Debug Adapter Protocol)
-vim.pack.add({
-  { src = "https://github.com/mfussenegger/nvim-dap" },
-  { src = "https://github.com/rcarriga/nvim-dap-ui" },
-  { src = "https://github.com/nvim-neotest/nvim-nio" },
-  { src = "https://github.com/theHamsta/nvim-dap-virtual-text" },
-})
-
-local dap = require("dap")
-local dapui = require("dapui")
-
-require("nvim-dap-virtual-text").setup({})
-dapui.setup({})
-
--- Automatically open/close DAP UI
-dap.listeners.before.attach.dapui_config = function()
-  dapui.open()
-end
-dap.listeners.before.launch.dapui_config = function()
-  dapui.open()
-end
-dap.listeners.before.event_terminated.dapui_config = function()
-  dapui.close()
-end
-dap.listeners.before.event_exited.dapui_config = function()
-  dapui.close()
-end
-
--- DAP Keymaps
-vim.keymap.set("n", "<F5>", dap.continue, { desc = "Debug: Start/Continue" })
-vim.keymap.set("n", "<F9>", dap.toggle_breakpoint, { desc = "Debug: Toggle Breakpoint" })
-vim.keymap.set("n", "<F10>", dap.step_over, { desc = "Debug: Step Over" })
-vim.keymap.set("n", "<F11>", dap.step_into, { desc = "Debug: Step Into" })
-vim.keymap.set("n", "<F12>", dap.step_out, { desc = "Debug: Step Out" })
-vim.keymap.set("n", "<leader>db", dap.toggle_breakpoint, { desc = "Debug: Toggle Breakpoint" })
-vim.keymap.set("n", "<leader>dB", function()
-  dap.set_breakpoint(vim.fn.input("Breakpoint condition: "))
-end, { desc = "Debug: Set Conditional Breakpoint" })
-vim.keymap.set("n", "<leader>dl", function()
-  dap.set_breakpoint(nil, nil, vim.fn.input("Log point message: "))
-end, { desc = "Debug: Set Log Point" })
-vim.keymap.set("n", "<leader>dr", dap.repl.open, { desc = "Debug: Open REPL" })
-vim.keymap.set("n", "<leader>du", dapui.toggle, { desc = "Debug: Toggle UI" })
-vim.keymap.set({ "n", "v" }, "<leader>de", dapui.eval, { desc = "Debug: Evaluate Expression" })
-
-dap.adapters.coreclr = {
-  type = "executable",
-  command = "netcoredbg",
-  args = { "--interpreter=vscode" },
-}
 
 if vim.g.neovide then
   vim.api.nvim_set_current_dir(vim.env.PWD)
