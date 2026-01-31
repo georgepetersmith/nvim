@@ -103,6 +103,9 @@ end
 vim.keymap.set("n", "<leader>w", "<C-w>", { desc = "Allow leader w to prefix window commands" })
 vim.keymap.set("t", "<Esc>", "<C-\\><C-n>", { desc = "Esc enters normal mode in the terminal" })
 vim.keymap.set("n", "<C-w>q", "<cmd>%bd<cr>", { desc = "Delete the current buffer" })
+vim.keymap.set("n", "<Leader>yf", '<cmd>let @+=expand("%:p")<CR>', { desc = "Copy full path" })
+vim.keymap.set("n", "<Leader>yr", '<cmd>let @+=expand("%")<CR>', { desc = "Copy relative path" })
+vim.keymap.set("n", "<Leader>yn", '<cmd>let @+=expand("%:t")<CR>', { desc = "Copy relative path" })
 
 vim.pack.add({ "https://github.com/Tsuzat/NeoSolarized.nvim" })
 require("NeoSolarized").setup({ transparent = false })
