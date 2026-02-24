@@ -9,34 +9,6 @@ local enabled_lsps = {
   "css",
 }
 
-local treesitter_parsers = {
-  "bash",
-  "c",
-  "c_sharp",
-  "cpp",
-  "csv",
-  "lua",
-  "vim",
-  "vimdoc",
-  "query",
-  "markdown",
-  "markdown_inline",
-  "json",
-  "toml",
-  "yaml",
-  "html",
-  "css",
-  "javascript",
-  "typescript",
-  "tsx",
-  "python",
-  "go",
-  "rust",
-  "sql",
-  "dockerfile",
-  "gitignore",
-}
-
 vim.g.mapleader = " "
 vim.opt.winborder = "single"
 vim.opt.splitbelow = true
@@ -219,18 +191,21 @@ vim.o.foldmethod = "expr"
 vim.o.foldexpr = "v:lua.vim.treesitter.foldexpr()"
 vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
 
-vim.api.nvim_create_autocmd("VimEnter", {
-  callback = function()
-    local installed = vim.tbl_map(function(p)
-      return p:match("([^/\\]+)%.[^.]+$")
-    end, vim.api.nvim_get_runtime_file("parser/*", true))
-    for _, lang in ipairs(treesitter_parsers) do
-      if not vim.tbl_contains(installed, lang) then
-        vim.cmd("TSInstall " .. lang)
-      end
+vim.api.nvim_create_autocmd("FileType", {
+  callback = function(args)
+    local lang = vim.treesitter.language.get_lang(args.match)
+    if not lang then
+      return
+    end
+    local ok = pcall(vim.treesitter.language.inspect, lang)
+    if ok then
+      return
+    end
+    local available = require("nvim-treesitter").get_available()
+    if vim.tbl_contains(available, lang) then
+      vim.cmd("TSInstall " .. lang)
     end
   end,
-  once = true,
 })
 
 require("nvim-treesitter-textobjects").setup({
