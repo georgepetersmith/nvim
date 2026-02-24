@@ -22,7 +22,6 @@ local treesitter_parsers = {
   "markdown",
   "markdown_inline",
   "json",
-  "jsonc",
   "toml",
   "yaml",
   "html",
@@ -223,8 +222,8 @@ vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
 vim.api.nvim_create_autocmd("VimEnter", {
   callback = function()
     local installed = vim.tbl_map(function(p)
-      return p:match("[^/\\]+$")
-    end, vim.api.nvim_get_runtime_file("parser/*.so", true))
+      return p:match("([^/\\]+)%.[^.]+$")
+    end, vim.api.nvim_get_runtime_file("parser/*", true))
     for _, lang in ipairs(treesitter_parsers) do
       if not vim.tbl_contains(installed, lang) then
         vim.cmd("TSInstall " .. lang)
