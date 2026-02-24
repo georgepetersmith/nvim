@@ -5,6 +5,8 @@ local enabled_lsps = {
   "rust_analyzer",
   "lua_ls",
   "ts_ls",
+  "html",
+  "css",
 }
 
 local treesitter_parsers = {
@@ -12,6 +14,7 @@ local treesitter_parsers = {
   "c",
   "c_sharp",
   "cpp",
+  "css",
   "csv",
   "lua",
   "vim",
@@ -71,11 +74,10 @@ vim.opt.spell = false
 vim.opt.signcolumn = "yes"
 vim.opt.showmode = false
 vim.opt.belloff = "all"
+vim.opt.foldlevelstart = 99
+
 vim.g.editorconfig = true
-vim.diagnostic.config({
-  virtual_text = false,
-  virtual_lines = { current_line = true },
-})
+
 vim.cmd("filetype plugin on")
 
 local has = function(x)
@@ -104,7 +106,27 @@ vim.keymap.set("n", "<leader>w", "<C-w>", { desc = "Allow leader w to prefix win
 vim.keymap.set("t", "<Esc>", "<C-\\><C-n>", { desc = "Esc enters normal mode in the terminal" })
 vim.keymap.set("n", "<C-w>q", "<cmd>%bd<cr>", { desc = "Delete the current buffer" })
 
+-- Full path to system clipboard
+vim.keymap.set("n", "<leader>yp", function()
+  vim.fn.setreg("+", vim.fn.expand("%:p"))
+  print("Copied full path: " .. vim.fn.getreg("+"))
+end)
+-- Relative path
+vim.keymap.set("n", "<leader>yr", function()
+  vim.fn.setreg("+", vim.fn.expand("%"))
+  print("Copied relative path: " .. vim.fn.getreg("+"))
+end)
+-- Filename only
+vim.keymap.set("n", "<leader>yn", function()
+  vim.fn.setreg("+", vim.fn.expand("%:t"))
+  print("Copied filename: " .. vim.fn.getreg("+"))
+end)
+
+vim.pack.add({ "https://github.com/DrKJeff16/project.nvim" })
+
 vim.pack.add({ "https://github.com/ibhagwan/fzf-lua" })
+require("project").setup({ fzf_lua = { enabled = false } })
+
 require("fzf-lua").setup({
   fzf_colors = true,
   keymap = {
@@ -158,6 +180,8 @@ require("conform").setup({
     lua = { "stylua" },
     rust = { "leptosfmt", "rustfmt", lsp_format = "fallback" },
     javascript = { "prettier", stop_after_first = true },
+    html = { "prettier", stop_after_first = true },
+    css = { "prettier", stop_after_first = true },
   },
 })
 
@@ -185,18 +209,14 @@ require("oil").setup({
 vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
 
 vim.pack.add({
-  { src = "https://github.com/nvim-treesitter/nvim-treesitter", version = "master" },
-  { src = "https://github.com/nvim-treesitter/nvim-treesitter-textobjects", version = "master" },
+  { src = "https://github.com/nvim-treesitter/nvim-treesitter" },
+  { src = "https://github.com/nvim-treesitter/nvim-treesitter-textobjects" },
   { src = "https://github.com/windwp/nvim-ts-autotag" },
 })
-vim.api.nvim_create_autocmd("PackChanged", {
-  callback = function()
-    require("nvim-treesitter").update()
-  end,
-})
+vim.o.foldmethod = "expr"
+vim.o.foldexpr = "nvim_treesitter#foldexpr()"
 require("nvim-treesitter.configs").setup({
   ensure_installed = treesitter_parsers,
-  auto_install = true,
   highlight = {
     enable = true,
     additional_vim_regex_highlighting = false,
@@ -267,14 +287,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
     map("n", "gi", vim.lsp.buf.implementation, "Goto Implementation")
     map("n", "gr", vim.lsp.buf.references, "Goto References")
     map("n", "K", vim.lsp.buf.hover, "Hover")
-    map("n", "<F2>", vim.lsp.buf.rename, "Rename Symbol")
     map({ "n", "v" }, "<leader>.", vim.lsp.buf.code_action, "Code Action")
-    map("n", "[d", function()
-      vim.diagnostic.jump({ count = -1 })
-    end, "Prev Diagnostic")
-    map("n", "]d", function()
-      vim.diagnostic.jump({ count = 1 })
-    end, "Next Diagnostic")
     map("n", "gh", vim.diagnostic.open_float, "Line Diagnostics")
   end,
 })
@@ -291,68 +304,13 @@ vim.lsp.config("lua_ls", {
   },
 })
 
--- vim.pack.add({ "https://github.com/vague-theme/vague.nvim" })
--- require("vague").setup({})
-vim.pack.add({ "https://github.com/Tsuzat/NeoSolarized.nvim" })
-require("NeoSolarized").setup({ transparent = false })
+vim.pack.add({ "https://github.com/vague-theme/vague.nvim" })
+require("vague").setup({})
 vim.api.nvim_set_option_value("background", "dark", {})
-vim.cmd.colorscheme("NeoSolarized")
-
--- DAP (Debug Adapter Protocol)
-vim.pack.add({
-  { src = "https://github.com/mfussenegger/nvim-dap" },
-  { src = "https://github.com/rcarriga/nvim-dap-ui" },
-  { src = "https://github.com/nvim-neotest/nvim-nio" },
-  { src = "https://github.com/theHamsta/nvim-dap-virtual-text" },
-})
-
-local dap = require("dap")
-local dapui = require("dapui")
-
-require("nvim-dap-virtual-text").setup({})
-dapui.setup({})
-
--- Automatically open/close DAP UI
-dap.listeners.before.attach.dapui_config = function()
-  dapui.open()
-end
-dap.listeners.before.launch.dapui_config = function()
-  dapui.open()
-end
-dap.listeners.before.event_terminated.dapui_config = function()
-  dapui.close()
-end
-dap.listeners.before.event_exited.dapui_config = function()
-  dapui.close()
-end
-
--- DAP Keymaps
-vim.keymap.set("n", "<F5>", dap.continue, { desc = "Debug: Start/Continue" })
-vim.keymap.set("n", "<F9>", dap.toggle_breakpoint, { desc = "Debug: Toggle Breakpoint" })
-vim.keymap.set("n", "<F10>", dap.step_over, { desc = "Debug: Step Over" })
-vim.keymap.set("n", "<F11>", dap.step_into, { desc = "Debug: Step Into" })
-vim.keymap.set("n", "<F12>", dap.step_out, { desc = "Debug: Step Out" })
-vim.keymap.set("n", "<leader>db", dap.toggle_breakpoint, { desc = "Debug: Toggle Breakpoint" })
-vim.keymap.set("n", "<leader>dB", function()
-  dap.set_breakpoint(vim.fn.input("Breakpoint condition: "))
-end, { desc = "Debug: Set Conditional Breakpoint" })
-vim.keymap.set("n", "<leader>dl", function()
-  dap.set_breakpoint(nil, nil, vim.fn.input("Log point message: "))
-end, { desc = "Debug: Set Log Point" })
-vim.keymap.set("n", "<leader>dr", dap.repl.open, { desc = "Debug: Open REPL" })
-vim.keymap.set("n", "<leader>du", dapui.toggle, { desc = "Debug: Toggle UI" })
-vim.keymap.set({ "n", "v" }, "<leader>de", dapui.eval, { desc = "Debug: Evaluate Expression" })
-
-dap.adapters.coreclr = {
-  type = "executable",
-  command = "netcoredbg",
-  args = { "--interpreter=vscode" },
-}
+vim.cmd.colorscheme("vague")
 
 if vim.g.neovide then
-  vim.api.nvim_set_current_dir(vim.env.PWD)
-
-  local font_size = 13
+  local font_size = 11
 
   local function set_gui_font_size(value)
     vim.o.guifont = "Monaspace Neon NF:h" .. value
@@ -372,4 +330,7 @@ if vim.g.neovide then
   vim.keymap.set("n", "<F11>", "<cmd>let g:neovide_fullscreen = !g:neovide_fullscreen<cr>")
 
   set_gui_font_size(font_size)
+
+  vim.g.neovide_title_background_color = "002b36"
+  vim.g.neovide_title_text_color = "268bd2"
 end
