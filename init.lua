@@ -19,7 +19,6 @@ vim.opt.path:append({ "**" })
 vim.opt.syntax = "ON"
 vim.opt.backup = false
 vim.opt.swapfile = false
-vim.opt.compatible = false
 vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.mouse = "a"
@@ -31,7 +30,6 @@ vim.opt.tabstop = 4
 vim.opt.softtabstop = 2
 vim.opt.shiftwidth = 2
 vim.opt.fileencoding = "utf-8"
-vim.opt.encoding = "utf-8"
 vim.opt.pumheight = 10
 vim.opt.expandtab = true
 vim.opt.smartindent = true
@@ -39,16 +37,13 @@ vim.opt.breakindent = true
 vim.opt.scrolloff = 8
 vim.opt.sidescrolloff = 10
 vim.opt.completeopt = { "menuone", "noselect" }
-vim.opt.termguicolors = true
 vim.opt.spell = false
 vim.opt.signcolumn = "yes"
 vim.opt.showmode = false
-vim.opt.belloff = "all"
 vim.opt.foldlevelstart = 99
+vim.opt.termguicolors = true
 
 vim.g.editorconfig = true
-
-vim.cmd("filetype plugin on")
 
 local has = function(x)
   return vim.fn.has(x) == 1
@@ -74,10 +69,6 @@ end
 
 vim.keymap.set("n", "<leader>w", "<C-w>", { desc = "Allow leader w to prefix window commands" })
 vim.keymap.set("t", "<Esc>", "<C-\\><C-n>", { desc = "Esc enters normal mode in the terminal" })
-vim.keymap.set("n", "<C-w>q", "<cmd>%bd<cr>", { desc = "Delete the current buffer" })
-vim.keymap.set("n", "<Leader>yf", '<cmd>let @+=expand("%:p")<CR>', { desc = "Copy full path" })
-vim.keymap.set("n", "<Leader>yr", '<cmd>let @+=expand("%")<CR>', { desc = "Copy relative path" })
-vim.keymap.set("n", "<Leader>yn", '<cmd>let @+=expand("%:t")<CR>', { desc = "Copy relative path" })
 
 vim.pack.add({ "https://github.com/vague-theme/vague.nvim" })
 require("vague").setup({})
@@ -175,9 +166,9 @@ require("oil").setup({
     is_always_hidden = function(name, _)
       return name == ".." or name == ".git"
     end,
-    win_options = {
-      wrap = true,
-    },
+  },
+  win_options = {
+    wrap = true,
   },
 })
 vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
@@ -233,15 +224,6 @@ require("nvim-treesitter-textobjects").setup({
       ["[s"] = "@class.outer",
     },
   },
-  swap = {
-    enable = true,
-    swap_next = {
-      ["<leader>a"] = "@parameter.inner",
-    },
-    swap_previous = {
-      ["<leader>A"] = "@parameter.inner",
-    },
-  },
 })
 
 require("nvim-ts-autotag").setup({})
@@ -266,6 +248,9 @@ vim.api.nvim_create_autocmd("LspAttach", {
 })
 vim.pack.add({ "https://github.com/neovim/nvim-lspconfig" })
 vim.pack.add({ "https://github.com/seblyng/roslyn.nvim" })
+vim.lsp.config("*", {
+  capabilities = require("blink.cmp").get_lsp_capabilities(),
+})
 vim.lsp.enable(enabled_lsps)
 vim.lsp.config("lua_ls", {
   settings = {
