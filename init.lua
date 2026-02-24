@@ -14,7 +14,6 @@ local treesitter_parsers = {
   "c",
   "c_sharp",
   "cpp",
-  "css",
   "csv",
   "lua",
   "vim",
@@ -109,10 +108,10 @@ vim.keymap.set("n", "<Leader>yf", '<cmd>let @+=expand("%:p")<CR>', { desc = "Cop
 vim.keymap.set("n", "<Leader>yr", '<cmd>let @+=expand("%")<CR>', { desc = "Copy relative path" })
 vim.keymap.set("n", "<Leader>yn", '<cmd>let @+=expand("%:t")<CR>', { desc = "Copy relative path" })
 
-vim.pack.add({ "https://github.com/Tsuzat/NeoSolarized.nvim" })
-require("NeoSolarized").setup({ transparent = false })
+vim.pack.add({ "https://github.com/vague-theme/vague.nvim" })
+require("vague").setup({})
 vim.api.nvim_set_option_value("background", "dark", {})
-vim.cmd.colorscheme("NeoSolarized")
+vim.cmd.colorscheme("vague")
 
 -- Full path to system clipboard
 vim.keymap.set("n", "<leader>yp", function()
@@ -130,11 +129,7 @@ vim.keymap.set("n", "<leader>yn", function()
   print("Copied filename: " .. vim.fn.getreg("+"))
 end)
 
-vim.pack.add({ "https://github.com/DrKJeff16/project.nvim" })
-
 vim.pack.add({ "https://github.com/ibhagwan/fzf-lua" })
-require("project").setup({ fzf_lua = { enabled = false } })
-
 require("fzf-lua").setup({
   fzf_colors = true,
   keymap = {
@@ -222,55 +217,60 @@ vim.pack.add({
   { src = "https://github.com/windwp/nvim-ts-autotag" },
 })
 vim.o.foldmethod = "expr"
-vim.o.foldexpr = "nvim_treesitter#foldexpr()"
-require("nvim-treesitter.configs").setup({
-  ensure_installed = treesitter_parsers,
-  highlight = {
+vim.o.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+
+vim.api.nvim_create_autocmd("VimEnter", {
+  callback = function()
+    local installed = vim.tbl_map(function(p)
+      return p:match("[^/\\]+$")
+    end, vim.api.nvim_get_runtime_file("parser/*.so", true))
+    for _, lang in ipairs(treesitter_parsers) do
+      if not vim.tbl_contains(installed, lang) then
+        vim.cmd("TSInstall " .. lang)
+      end
+    end
+  end,
+  once = true,
+})
+
+require("nvim-treesitter-textobjects").setup({
+  select = {
     enable = true,
-    additional_vim_regex_highlighting = false,
-  },
-  indent = {
-    enable = true,
-  },
-  textobjects = {
-    select = {
-      enable = true,
-      lookahead = true,
-      keymaps = {
-        ["af"] = "@function.outer",
-        ["if"] = "@function.inner",
-        ["as"] = "@class.outer",
-        ["is"] = "@class.inner",
-        ["al"] = "@loop.outer",
-        ["il"] = "@loop.inner",
-      },
-    },
-    move = {
-      enable = true,
-      set_jumps = true,
-      goto_next_start = {
-        ["]f"] = "@function.outer",
-        ["]s"] = "@class.outer",
-      },
-      goto_previous_start = {
-        ["[f"] = "@function.outer",
-        ["[s"] = "@class.outer",
-      },
-    },
-    swap = {
-      enable = true,
-      swap_next = {
-        ["<leader>a"] = "@parameter.inner",
-      },
-      swap_previous = {
-        ["<leader>A"] = "@parameter.inner",
-      },
+    lookahead = true,
+    keymaps = {
+      ["af"] = "@function.outer",
+      ["if"] = "@function.inner",
+      ["as"] = "@class.outer",
+      ["is"] = "@class.inner",
+      ["al"] = "@loop.outer",
+      ["il"] = "@loop.inner",
     },
   },
-  autotag = {
+  move = {
     enable = true,
+    set_jumps = true,
+    goto_next_start = {
+      ["]f"] = "@function.outer",
+      ["]s"] = "@class.outer",
+    },
+    goto_previous_start = {
+      ["[f"] = "@function.outer",
+      ["[s"] = "@class.outer",
+    },
+  },
+  swap = {
+    enable = true,
+    swap_next = {
+      ["<leader>a"] = "@parameter.inner",
+    },
+    swap_previous = {
+      ["<leader>A"] = "@parameter.inner",
+    },
   },
 })
+
+require("nvim-ts-autotag").setup({})
 
 local aug = vim.api.nvim_create_augroup("my_lsp", {})
 vim.api.nvim_create_autocmd("LspAttach", {
@@ -302,34 +302,3 @@ vim.lsp.config("lua_ls", {
     },
   },
 })
-
-vim.pack.add({ "https://github.com/vague-theme/vague.nvim" })
-require("vague").setup({})
-vim.api.nvim_set_option_value("background", "dark", {})
-vim.cmd.colorscheme("vague")
-
-if vim.g.neovide then
-  local font_size = 11
-
-  local function set_gui_font_size(value)
-    vim.o.guifont = "Monaspace Neon NF:h" .. value
-  end
-
-  local function adjust_gui_font_size(delta)
-    font_size = font_size + delta
-    set_gui_font_size(font_size)
-  end
-
-  vim.keymap.set("n", "<c-_>", function()
-    adjust_gui_font_size(-1)
-  end)
-  vim.keymap.set("n", "<c-+>", function()
-    adjust_gui_font_size(1)
-  end)
-  vim.keymap.set("n", "<F11>", "<cmd>let g:neovide_fullscreen = !g:neovide_fullscreen<cr>")
-
-  set_gui_font_size(font_size)
-
-  vim.g.neovide_title_background_color = "002b36"
-  vim.g.neovide_title_text_color = "268bd2"
-end
